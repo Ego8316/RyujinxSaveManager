@@ -1,0 +1,51 @@
+# Python environments and caches
+.venv/
+env/
+venv/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Build and packaging output
+*.egg-info/
+*.spec
+build/
+dist/
+
+# Test coverage and local diagnostics
+.coverage
+coverage.xml
+htmlcov/
+*.log
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# User saves and private test fixtures
+*.bin
+*.dat
+*.sav
+*.save
+fixtures/private/
+
+# Local Ryujinx data and automatic backups
+Ryujinx/
+ryujinx/
+/backup/
+backups/
+
+# Game dumps, extracted assets, and console keys
+*.nca
+*.nsp
+*.tik
+*.xci
+*.keys
+prod.keys
+title.keys
+assets/extracted/
+extracted-assets/

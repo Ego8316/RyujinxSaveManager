@@ -1,0 +1,9 @@
+# Save safety design
+
+**Invariant:** a failed edit must never destroy or corrupt the original save. Every operation writing to an existing save requires a verified automatic backup first. Failure to create or verify the backup aborts the operation; there is no bypass.
+
+The future transaction service must: (1) locate and validate readable source files; (2) snapshot every relevant file in the container, including metadata such as `ExtraData0`; (3) verify copied file sizes and SHA-256 hashes against the source and persist a manifest; (4) load a working copy; (5) apply plugin modifications and recalculate plugin-specific integrity data; (6) write temporary files on the target volume, reopen, and validate them; (7) replace targets atomically; (8) verify final bytes and report the result. Never modify source files before the verified snapshot. Reject symlinks, path traversal, ambiguous container boundaries, missing files, and changed sources rather than guessing.
+
+A predictable backup layout is `backups/<title_id>/<timestamp>/`; unknown IDs need a safe stable fallback. A manifest should include source path, timestamp, title ID, application version, relative filenames, sizes, and SHA-256 hashes. Use collision-resistant handling for simultaneous snapshots, avoid writing backups inside the source container, and validate enough free space. Backups must be restorable independently of game parsing.
+
+Atomic replacement of one file does not make a multi-file container transaction atomic. Before implementing multi-file writes, define an explicit journal/rollback strategy and test interruption at each commit point. Source changes between snapshot and commit must abort. A failed post-replacement verification needs a documented recovery path from the verified snapshot. Never claim the whole operation is crash-safe until these cases are tested on Windows filesystems. Phase 0 has no writer.

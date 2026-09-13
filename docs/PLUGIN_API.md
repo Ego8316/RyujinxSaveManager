@@ -1,0 +1,7 @@
+# Plugin API
+
+A bundled `GamePlugin` currently has a stable ID, display name, supported Title IDs, read-only `detects(save)`, and `relevant_files(save)` returning paths relative to the container. The explicit `PluginRegistry` rejects duplicate IDs and returns all matches; conflict resolution is a future application-service decision. Title ID alone may be insufficient, and detection must remain read-only. The core must treat declared files as untrusted and enforce path containment.
+
+A future editing contract should separate `parse(bytes)`, `validate(model or bytes)`, `apply(operation)`, `recalculate_integrity(bytes)`, and a semantic diff interpreter. Operations should be explicit, typed, and auditable. Parsing must preserve unknown bytes; serialization must change only intended fields plus documented integrity bytes. The transaction service owns backup, temporary writes, commit, and recovery. Plugins cannot receive writable paths or bypass the safety engine. A plugin may provide a code-first PySide6 editor widget through a separate UI adapter that emits operation requests rather than writing files. It follows the same component and styling guidance as generic UI; see [UI/UX](UI_UX.md).
+
+Optional assets belong behind a small asset provider that yields labels/icons or a fallback when assets are absent. Binary parsers must never import or depend on UI assets. No remote loading, downloading, or dynamic package marketplace is planned. See [reverse-engineering rules](REVERSE_ENGINEERING.md).
