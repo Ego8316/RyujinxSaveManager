@@ -24,3 +24,28 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+# Keep one formatter (Ruff). Documentation, complexity, and performance rules
+# are reviewed case by case: broad activation adds noise to this small scaffold.
+select = [
+    "E", "W", "F", "I", "N", "UP", "B", "A", "C4", "DTZ", "T10",
+    "ISC", "ICN", "PIE", "PT", "Q", "RET", "SIM", "ARG", "PTH",
+    "ERA", "RUF",
+]
+ignore = ["ISC001"] # Conflicts with the Ruff formatter.
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+
+[tool.coverage.run]
+source = ["ryujinx_save_manager"]
+
+[tool.coverage.report]
+show_missing = true
