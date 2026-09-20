@@ -1,6 +1,6 @@
 # RyujinxSaveManager
 
-A local Windows and Linux desktop application planned to discover, back up, inspect, restore, and edit Ryujinx saves without asking users to understand Ryujinx's save directory layout. The current application can select a Ryujinx save root and list structurally recognizable containers without editing them. Game names and Title IDs are not decoded yet. WSL is the primary development environment.
+A local Windows and Linux desktop application planned to discover, back up, inspect, restore, and edit Ryujinx saves without asking users to understand Ryujinx's save directory layout. The current application can select a Ryujinx save root and list structurally recognizable containers without editing them. When both metadata copies agree, it shows the Application ID and save-data type, including Account, Device, and BCAT saves. Friendly game names are not resolved yet. WSL is the primary development environment.
 
 ## Development from WSL
 

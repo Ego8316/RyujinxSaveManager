@@ -9,6 +9,14 @@ from ryujinx_save_manager.core.discovery_diagnostic_code import DiscoveryDiagnos
 
 
 @dataclass(frozen=True, slots=True)
+class SaveType:
+    """Provider-neutral save kind with its original code and display label."""
+
+    code: int | str
+    label: str
+
+
+@dataclass(frozen=True, slots=True)
 class DiscoveredSave:
     """A save container identified by a storage provider, not parsed game data."""
 
@@ -17,6 +25,8 @@ class DiscoveredSave:
     title_id: str | None = None
     user_id: str | None = None
     display_name: str | None = None
+    save_data_id: str | None = None
+    save_data_type: SaveType | None = None
 
 
 @dataclass(frozen=True, slots=True)

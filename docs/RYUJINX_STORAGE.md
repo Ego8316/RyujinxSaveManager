@@ -99,13 +99,13 @@ Save-data **space** and save-data **type** are separate concepts.
 Current libnx definitions expose the following `FsSaveDataType` values:[2]
 
 ```text
-System
-Account
-Bcat
-Device
-Temporary
-Cache
-SystemBcat
+0 = System
+1 = Account
+2 = BCAT
+3 = Device
+4 = Temporary
+5 = Cache
+6 = SystemBCAT
 ```
 
 The Switch filesystem also exposes different open operations for account, BCAT, device, temporary, cache, system, and system-BCAT save data.[2]
@@ -419,11 +419,16 @@ The data and journal sizes are logical save-data allocation information and must
 
 # 13. Application ID / Title ID extraction
 
-For appropriate save-data types, the first eight bytes of `SaveDataAttribute` are the `application_id` field.[2]
+The first eight bytes of `SaveDataAttribute` are the `application_id` field.[2]
 
 Independent tooling confirms the practical usefulness of this: SESS scans Ryujinx save directories and extracts a Title ID from `ExtraData0`.[6]
 
-Therefore RyujinxSaveManager may eventually parse validated metadata and expose an Application ID.
+Read-only inspection of three private Ryujinx containers confirms little-endian
+Application ID serialization in Account, Device, and BCAT saves. Two containers
+share `01006F8002326000` (Device and BCAT); another has
+`0100EA80032EA000` (Account). These are distinct from their physical
+SaveDataIds. **Confidence: HIGH CONFIDENCE for these observed records**; the
+complete metadata semantics of every emulator version remain unverified.
 
 However, this must not be implemented as an unvalidated:
 
@@ -436,13 +441,17 @@ against arbitrary files.
 A robust parser should establish at least:
 
 * expected metadata size;
-* recognized save-data type;
-* structurally plausible fields;
+* save-data type, while retaining unknown numeric values;
+* structurally plausible fields where their meaning is known;
 * correct serialization/endianness from fixtures;
 * behavior when metadata copies disagree;
 * behavior for historical or incomplete metadata.
 
-The parser should expose validation/confidence information rather than silently trusting the first eight bytes.
+Current discovery requires both `ExtraData` copies to be `0x200` bytes and to
+agree on Application ID, AccountUid, SystemSaveDataId, and save-data type before
+exposing the ID or type. It does not require zero padding or interpret unknown
+fields. A single copy remains unidentified by project policy, and conflicting
+copies receive a diagnostic; neither copy is selected as authoritative.
 
 ---
 
@@ -950,13 +959,14 @@ This prevents filesystem discovery from becoming dependent on successful metadat
 
 # 33. Metadata validation strategy
 
-A future `SaveDataExtraData` parser should be deliberately strict.
+The current read-only header inspection checks size and compares identity fields.
+A fuller `SaveDataExtraData` parser should be deliberately strict.
 
 Possible validation inputs include:
 
 ```text
 file length == 0x200
-recognized save-data type
+save-data type (retain unrecognized numeric values)
 structurally plausible rank/index
 known padding/reserved expectations where applicable
 ApplicationId rules for account saves
@@ -979,7 +989,8 @@ MALFORMED
 UNKNOWN
 ```
 
-The exact API should be designed when metadata parsing is implemented.
+Current discovery uses size and identity agreement rather than claiming full
+semantic validation of every field. Richer validation states remain future work.
 
 ---
 
@@ -1269,25 +1280,50 @@ This prevents the architectural mistake of treating a physical Ryujinx directory
 
 # 43. Current `DiscoveredSave` behavior
 
-Until metadata parsing is implemented and fixture-validated, fields such as:
+The scanner records a canonical 16-digit physical SaveDataId only when the
+container name has that form. It checks each `ExtraData` file is exactly
+`0x200` bytes and compares Application ID, AccountUid, SystemSaveDataId, and
+save-data type across copies. With two agreeing copies, it exposes a nonzero
+Application ID in `title_id` as 16 uppercase hexadecimal digits and the save
+type through the provider-neutral `SaveType` value (original numeric code and
+display label), including Account, Device, and BCAT. The Switch-specific
+`SaveDataType` enum remains inside the Ryujinx storage package. Unknown
+numeric save types retain their original code and do not crash discovery. A zero
+Application ID stays unidentified. A single copy or a malformed copy does not
+establish identity under the current conservative policy. Disagreement produces
+`CONFLICTING_METADATA`; the scanner does not select a winner.
+
+**Source evidence:** libnx defines field offsets and type values.[2] Original
+Ryujinx source documents the directory structure and metadata storage at the
+referenced commits.[1][5] **Observed evidence:** three real Ryujinx containers
+were inspected read-only: container A had Application ID `01006F8002326000`
+and type Device; container B had the same Application ID and type BCAT;
+container C had Application ID `0100EA80032EA000` and type Account. Their
+metadata copies agreed on the inspected identity fields. The AccountUid was
+zero in the observed Device and BCAT records and nonzero in the Account record;
+its full user-facing representation is not yet established. No personal path,
+AccountUid value, or real metadata file is committed. Repository tests use
+synthetic bytes. **Confidence: HIGH CONFIDENCE for observed serialization;
+UNKNOWN for transaction-bank authority and broad fork/version behavior.**
+
+Fields such as:
 
 ```text
-title_id
 user_id
 display_name
 ```
 
-may legitimately remain `None`.
+remain `None`; `title_id` and `save_data_type` may also remain `None` when
+evidence is insufficient. `save_data_id` is never inferred from the metadata
+Application ID.
 
 The UI should present:
 
 ```text
-Unidentified save
+SaveDataId 0000000000000001 · Application ID: 01006F8002326000 · Save type: Device
 ```
 
-rather than guessing.
-
-Once `SaveDataExtraData` parsing is implemented, `title_id` may be populated from a validated ApplicationId where the save-data type and structure make that interpretation appropriate.[2]
+rather than guessing a friendly game name.
 
 `display_name` remains a separate resolution problem.
 
@@ -1363,7 +1399,7 @@ Verify against the LibHac versions used by supported Ryujinx/Ryubing builds:
 
 Verify with fixtures:
 
-* actual serialized endianness of fields in Ryujinx `ExtraData*`;
+* serialized endianness of fields beyond the observed little-endian Application ID;
 * exact AccountUid representation;
 * save-data types encountered in real user save roots;
 * differences between user and system metadata;

@@ -63,11 +63,18 @@ class MainWindow(QMainWindow):
         self._save_list.clear()
         self._diagnostic_list.clear()
         for save in report.saves:
-            label = save.display_name or f"Unidentified save ({save.container_path.name})"
+            save_id = save.save_data_id or save.container_path.name
+            label = save.display_name or f"SaveDataId {save_id}"
+            if save.title_id:
+                label += f" · Application ID: {save.title_id}"
+            if save.save_data_type is not None:
+                label += f" · Save type: {save.save_data_type.label}"
+            if not save.title_id:
+                label += " · Unidentified"
             self._save_list.addItem(label)
         for diagnostic in report.diagnostics:
             self._diagnostic_list.addItem(f"{diagnostic.path.name}: {diagnostic.message}")
         self._status_label.setText(
             f"{len(report.saves)} save container(s), {len(report.diagnostics)} diagnostic(s). "
-            "Title IDs are not decoded yet."
+            "Application IDs appear when both metadata copies agree."
         )

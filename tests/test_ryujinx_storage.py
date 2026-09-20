@@ -15,7 +15,7 @@ def test_discovers_numbered_container_without_claiming_title_id(tmp_path: Path) 
     container = tmp_path / "0000000000000001"
     (container / "0").mkdir(parents=True)
     (container / "0" / "synthetic.txt").write_text("sample")
-    (container / "ExtraData0").write_bytes(b"synthetic metadata")
+    (container / "ExtraData0").write_bytes(bytes(0x200))
     before = (container / "ExtraData0").read_bytes()
 
     report = RyujinxStorageProvider().discover(tmp_path)
@@ -48,6 +48,7 @@ def test_partial_and_unusual_containers_produce_diagnostics(tmp_path: Path) -> N
         DiscoveryDiagnosticCode.UNUSUAL_CONTAINER_ID,
         DiscoveryDiagnosticCode.NO_PAYLOAD,
         DiscoveryDiagnosticCode.NO_METADATA,
+        DiscoveryDiagnosticCode.INVALID_METADATA_SIZE,
     }
 
 

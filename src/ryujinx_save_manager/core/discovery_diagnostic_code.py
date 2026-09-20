@@ -11,6 +11,8 @@ class DiscoveryDiagnosticCode(StrEnum):
     UNUSUAL_CONTAINER_ID = "unusual_container_id"
     NO_PAYLOAD = "no_payload"
     NO_METADATA = "no_metadata"
+    INVALID_METADATA_SIZE = "invalid_metadata_size"
+    CONFLICTING_METADATA = "conflicting_metadata"
 
     @property
     def message(self) -> str:
@@ -28,4 +30,8 @@ class DiscoveryDiagnosticCode(StrEnum):
                 return "No recognized payload directory found"
             case DiscoveryDiagnosticCode.NO_METADATA:
                 return "No recognized metadata file found"
+            case DiscoveryDiagnosticCode.INVALID_METADATA_SIZE:
+                return "Metadata does not have the documented size"
+            case DiscoveryDiagnosticCode.CONFLICTING_METADATA:
+                return "Metadata copies disagree on save identity fields"
         raise AssertionError(f"Missing message for discovery code {self.value}")
