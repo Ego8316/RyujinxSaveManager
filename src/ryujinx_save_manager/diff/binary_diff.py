@@ -1,5 +1,6 @@
 """Format-neutral comparison of byte strings."""
 
+# standard imports
 from dataclasses import dataclass
 from itertools import zip_longest
 

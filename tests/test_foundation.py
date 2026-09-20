@@ -1,10 +1,13 @@
+# standard imports
 from pathlib import Path
 
-import pytest
-
+# 1st-party imports
 from ryujinx_save_manager.core.models import DiscoveredSave
 from ryujinx_save_manager.diff.binary_diff import ByteChange, compare_bytes
-from ryujinx_save_manager.plugins.registry import PluginRegistry
+from ryujinx_save_manager.plugins.plugin_registry import PluginRegistry
+
+# 3rd-party imports
+import pytest
 
 
 def test_binary_diff_reports_offsets_and_length_changes() -> None:

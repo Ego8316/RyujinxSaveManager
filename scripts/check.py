@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 """Run the same quality checks locally as CI."""
 
+# standard imports
 import subprocess
 import sys
 

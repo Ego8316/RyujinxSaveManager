@@ -1,9 +1,11 @@
 """Explicit registry for bundled plugins; no dynamic downloads or imports."""
 
+# standard imports
 from dataclasses import dataclass, field
 
+# 1st-party imports
 from ryujinx_save_manager.core.models import DiscoveredSave
-from ryujinx_save_manager.plugins.base import GamePlugin
+from ryujinx_save_manager.plugins.game_plugin import GamePlugin
 
 
 @dataclass(slots=True)

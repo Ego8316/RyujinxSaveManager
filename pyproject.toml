@@ -39,6 +39,16 @@ select = [
 ]
 ignore = ["ISC001"] # Conflicts with the Ruff formatter.
 
+[tool.ruff.lint.isort]
+known-first-party = ["ryujinx_save_manager"]
+section-order = ["future", "standard-library", "first-party", "third-party", "local-folder"]
+
+[tool.ruff.lint.isort.import-heading]
+standard-library = "standard imports"
+first-party = "1st-party imports"
+third-party = "3rd-party imports"
+local-folder = "local imports"
+
 [tool.mypy]
 python_version = "3.12"
 strict = true

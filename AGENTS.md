@@ -6,7 +6,11 @@ Correctness and data safety outrank convenience. Treat user saves as valuable an
 
 Keep game-specific parsing, fields, checksums, and UI inside game plugins. The core and storage providers must remain format-agnostic. Never invent offsets or silently repair unknown data. Preserve unknown bytes exactly. Distinguish confirmed knowledge from assumptions, record evidence and confidence, and update format documentation when new knowledge is discovered.
 
-Add meaningful tests for binary parsing or writing changes: verify exact changed offsets, preservation of unrelated bytes, endianness, checksums, and failure behavior. Use synthetic fixtures by default; do not commit real saves or proprietary assets. Run relevant tests before declaring work complete. Minimize unrelated changes. The current Phase 0 shell is read-only; do not describe planned write paths as implemented.
+When a module primarily contains one class, name the file after that class in `snake_case` (for example, `discovery_service.py` for `DiscoveryService`). Keep cohesive groups of models or a class with closely related functions together when that makes the module clearer.
+
+Let Ruff sort imports and maintain section comments: `# standard imports`, `# 1st-party imports`, `# 3rd-party imports`, and `# local imports` when those sections are present. Project package imports are first-party; relative imports are local. Run `ruff check --fix .` to apply import ordering before the final quality gate.
+
+Add meaningful tests for binary parsing or writing changes: verify exact changed offsets, preservation of unrelated bytes, endianness, checksums, and failure behavior. Use synthetic fixtures by default; do not commit real saves or proprietary assets. Run relevant tests before declaring work complete. Minimize unrelated changes. The current discovery UI is read-only; do not describe planned write paths or unverified Title ID decoding as implemented.
 
 ## Quality gate and platforms
 

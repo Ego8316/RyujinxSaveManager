@@ -1,9 +1,11 @@
 """Game plugin boundary. This API will evolve before write support is enabled."""
 
+# standard imports
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Protocol
 
+# 1st-party imports
 from ryujinx_save_manager.core.models import DiscoveredSave
 
 
