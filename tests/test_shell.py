@@ -1,10 +1,17 @@
-"""Headless smoke coverage for the read-only Qt shell."""
+"""Headless smoke coverage for read-only root selection and presentation."""
 
-import pytest
-from PySide6.QtWidgets import QApplication, QLabel
+# standard imports
+from pathlib import Path
 
+# 1st-party imports
 from ryujinx_save_manager import __main__
+from ryujinx_save_manager.core.discovery_service import DiscoveryService
+from ryujinx_save_manager.storage.ryujinx_storage_provider import RyujinxStorageProvider
 from ryujinx_save_manager.ui.main_window import MainWindow
+
+# 3rd-party imports
+import pytest
+from PySide6.QtWidgets import QApplication, QLabel, QListWidget, QPushButton
 
 
 @pytest.fixture
@@ -15,13 +22,45 @@ def app(monkeypatch: pytest.MonkeyPatch) -> QApplication:
     return application
 
 
-def test_shell_is_explicitly_read_only(app: QApplication) -> None:
+def test_shell_displays_unidentified_saves_and_diagnostics(
+    app: QApplication, tmp_path: Path
+) -> None:
     assert QApplication.instance() is app
-    window = MainWindow()
-    assert window.windowTitle() == "RyujinxSaveManager — Phase 0"
-    label = window.centralWidget()
-    assert isinstance(label, QLabel)
-    assert "Save discovery is not implemented" in label.text()
+    container = tmp_path / "0000000000000001"
+    (container / "0").mkdir(parents=True)
+    window = MainWindow(DiscoveryService(RyujinxStorageProvider()))
+    window.scan_root(tmp_path)
+
+    assert window.windowTitle() == "RyujinxSaveManager"
+    lists = window.findChildren(QListWidget)
+    assert len(lists) == 2
+    assert lists[0].item(0).text() == "Unidentified save (0000000000000001)"
+    assert "No recognized metadata file found" in lists[1].item(0).text()
+    assert any("1 save container" in label.text() for label in window.findChildren(QLabel))
+    window.close()
+
+
+def test_shell_reports_invalid_root(app: QApplication, tmp_path: Path) -> None:
+    assert QApplication.instance() is app
+    window = MainWindow(DiscoveryService(RyujinxStorageProvider()))
+    window.scan_root(tmp_path / "missing")
+    assert any("Could not scan" in label.text() for label in window.findChildren(QLabel))
+    window.close()
+
+
+def test_choose_button_passes_selected_directory_to_service(
+    app: QApplication, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    assert QApplication.instance() is app
+    window = MainWindow(DiscoveryService(RyujinxStorageProvider()))
+    monkeypatch.setattr(
+        "ryujinx_save_manager.ui.main_window.QFileDialog.getExistingDirectory",
+        lambda *_args: str(tmp_path),
+    )
+    button = window.findChild(QPushButton)
+    assert button is not None
+    button.click()
+    assert any(str(tmp_path) in label.text() for label in window.findChildren(QLabel))
     window.close()
 
 
@@ -36,6 +75,9 @@ def test_entry_point_returns_event_loop_code(monkeypatch: pytest.MonkeyPatch) ->
             return 42
 
     class StubWindow:
+        def __init__(self, discovery: DiscoveryService) -> None:
+            assert isinstance(discovery.provider, RyujinxStorageProvider)
+
         def show(self) -> None:
             shown.append(True)
 
